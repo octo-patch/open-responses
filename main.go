@@ -45,9 +45,21 @@ type Config struct {
 }
 
 const (
-	configFileName = "open-responses.json" // Name of the configuration file
-	version        = "0.1.6"               // Current CLI version
+	configFileName       = "open-responses.json" // Name of the configuration file
+	version              = "0.1.6"               // Current CLI version
+	minimaxDefaultModel  = "MiniMax-M3"
+	minimaxFallbackModel = "MiniMax-M2.7"
+	minimaxGlobalBaseURL = "https://api.minimax.io/v1"
+	minimaxChinaBaseURL  = "https://api.minimaxi.com/v1"
 )
+
+func minimaxEnvVars() []EnvVar {
+	return []EnvVar{
+		{Name: "MINIMAX_API_KEY", Description: "MiniMax API Key", Default: "", Required: false},
+		{Name: "MINIMAX_BASE_URL", Description: "MiniMax API base URL", Default: minimaxGlobalBaseURL, Required: false},
+		{Name: "MINIMAX_MODEL_ID", Description: "MiniMax model ID", Default: minimaxDefaultModel, Required: false},
+	}
+}
 
 // CLAUDE-note-root-cmd: Command structure definitions - Root command and CLI entrypoint (~23 lines)
 // Root command for the CLI application
@@ -938,6 +950,7 @@ func setupConfig() {
 		{Name: "LLAMA_API_KEY", Description: "Llama API Key", Default: "", Required: false},
 		{Name: "GOOGLE_APPLICATION_CREDENTIALS", Description: "Google Application Credentials", Default: "", Required: false},
 	}
+	envVars = append(envVars, minimaxEnvVars()...)
 
 	// Collect values for each environment variable
 	if config.Environment == nil {
@@ -1130,6 +1143,14 @@ func createEnvFile(envValues map[string]string) {
 		}
 	}
 
+	content += "\n# MiniMax\n"
+	content += fmt.Sprintf("# Models: %s, %s\n", minimaxDefaultModel, minimaxFallbackModel)
+	content += fmt.Sprintf("# Global endpoint: %s\n", minimaxGlobalBaseURL)
+	content += fmt.Sprintf("# China endpoint: %s\n", minimaxChinaBaseURL)
+	addEnvVar(&content, envValues, "MINIMAX_API_KEY")
+	addEnvVar(&content, envValues, "MINIMAX_BASE_URL")
+	addEnvVar(&content, envValues, "MINIMAX_MODEL_ID")
+
 	// Add cloud providers
 	content += "\n# Cloud Service Providers\n"
 	for _, name := range cloudProviders {
@@ -1303,6 +1324,11 @@ x--shared-environment: &shared-environment
   GITHUB_API_KEY: ${GITHUB_API_KEY}
   NVIDIA_NIM_API_KEY: ${NVIDIA_NIM_API_KEY}
   GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+
+  # MiniMax
+  MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+  MINIMAX_BASE_URL: ${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
+  MINIMAX_MODEL_ID: ${MINIMAX_MODEL_ID:-MiniMax-M3}
 
   ### INTERNAL ###
   # Change **ONLY** if you know what you're doing
@@ -2242,6 +2268,8 @@ func manageKeys(args []string) {
 			envName = "OPENAI_API_KEY"
 		case "anthropic":
 			envName = "ANTHROPIC_API_KEY"
+		case "minimax":
+			envName = "MINIMAX_API_KEY"
 		case "unstructured":
 			envName = "UNSTRUCTURED_API_KEY"
 		case "brave":
