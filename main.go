@@ -47,8 +47,8 @@ type Config struct {
 const (
 	configFileName       = "open-responses.json" // Name of the configuration file
 	version              = "0.1.6"               // Current CLI version
-	minimaxDefaultModel  = "MiniMax-M3"
-	minimaxFallbackModel = "MiniMax-M2.7"
+	minimaxDefaultModel  = "MiniMax-M3.1-Flash"
+	minimaxFallbackModel = "MiniMax-M3"
 	minimaxGlobalBaseURL = "https://api.minimax.io/v1"
 	minimaxChinaBaseURL  = "https://api.minimaxi.com/v1"
 )
@@ -1328,7 +1328,7 @@ x--shared-environment: &shared-environment
   # MiniMax
   MINIMAX_API_KEY: ${MINIMAX_API_KEY}
   MINIMAX_BASE_URL: ${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
-  MINIMAX_MODEL_ID: ${MINIMAX_MODEL_ID:-MiniMax-M3}
+  MINIMAX_MODEL_ID: ${MINIMAX_MODEL_ID:-MiniMax-M3.1-Flash}
 
   ### INTERNAL ###
   # Change **ONLY** if you know what you're doing
